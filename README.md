@@ -1,4 +1,4 @@
-# Probabilidad y Estadística (UOC) - Reto 3
+# Probabilidad y Estadística (UOC) - Reto 4
 
 **Borja Villena Pardo**
 
