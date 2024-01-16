@@ -1,0 +1,322 @@
+---
+title: "PEC4: Constrastes de Hipótesis."
+author: "Borja Villena Pardo"
+output:
+  html_document:
+---
+
+
+```{r,echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      results = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align='center',
+                      fig.height= 5,
+                      fig.width=5,
+                      cache = FALSE)
+```
+
+
+```{r}
+# Incluye codigo para leer BBDD
+load("C:/Users/bvill/Documents/4. UOC/1º Probabilidad y Estadística/Reto 4/Entregable/BBDD_COVID2.RData")
+```
+
+El reciente problema de salud pública generado por la COVID-19  ha retado a la comunidad cientifica a identificar los factores de riesgo para el desarrollo de COVID severo. La base de datos que se os presenta contiene una gran cantidad de información anonimizada relacionada con el paciente hospitalizado por COVID-19, incluidas características sociodemográficas y clínicas previas a la infección por SARS-CoV-2. Los datos públicos proceden del siguiente enlace de [Kaggle](https://www.kaggle.com/code/meirnizri/covid-19-risk-prediction/data). En esta práctica se trabaja con una selección aleatoria de pacientes hospitalizados (n = 3000) y variables de interés (p = 10).
+
+Las variables que se encuentran en el dataset son las siguientes:
+
+• *SEX* : Sexo del paciente (Femenino/Masculino).
+
+• *PATIENT_TYPE* : Hospitalización del paciente (Yes/No).
+
+• *AGE* : Edad del paciente.
+
+• *OBESITY* : Paciente con diagnóstico de obesidad (Yes/No).
+
+• *HIPERTENSION* : Paciente con diagnóstico de hipertensión (Yes/No).
+
+• *DIABETES* : Paciente con diagnóstico de diabetes (Yes/No).
+
+• *PNEUMONIA* : Paciente con inflamación pulmonar (Yes/No).
+
+• *ICU* : Ingreso en unidad de cuidados intesivos (Yes/No).
+
+• *INTUBED* : Requerimiento de intubación (Yes/No).
+
+• *DIED* : fallecimiento (Yes/No).
+
+
+Os puede ser útil consultar el siguiente material:
+
+- Apuntes de contraste de hipótesis
+- Apuntes de contraste de dos muestras
+
+Hay que entregar la práctica en fichero pdf o html (exportando el resultado final a pdf o html por ejemplo). Se recomienda generar el informe con Rmarkdown que genera automáticamente el pdf/html a entregar. Se puede utilizar el fichero .Rmd, que disponéis en la PEC, como plantilla para resolver los ejercicios. 
+
+
+# Problema 1
+
+**a) Según estudios previos, la edad media de los pacientes hospitalizados por COVID-19 es 53 años. Realiza el contraste de hipótesis sobre si la media de edad de nuestra cohorte es diferente a la media de edad teórica. ¿Podemos rechazar la hipótesis nula de igualdad a un nivel de significación del 0.05? **
+
+
+```{r}
+# Creamos variable dat_age con todos los valores de la variable de 
+# interés 'AGE' que coinciden con personas hospitalizadas según la varibale de 
+# interés 'PATIENT_TYPE' de nuestra base de datos 'dat'. 
+
+dat_age <- dat$AGE[dat$PATIENT_TYPE=='Yes']
+
+# Aplicamos función t.test() a la variable dat_age, con un nivel de confianza
+# del 95% 
+
+resultado <- t.test(dat_age, alternative = 'two.sided', mu = 53, conf.level = 0.95)
+
+print(resultado)
+
+```
+No rechazaremos la hipótesis nula de igualdad, ya que con un nivel de 
+confianza del 95% la media de nuestra muestra: `r mean(dat_age) `, está dentro del intervalo de confianza: [`r resultado$conf.int[1]`,`r resultado$conf.int[2]`].
+
+**b) Otros estudios estiman que la prevalencia de diabetes en pacientes hospitalizados por COVID-19 es del 30%. ¿Hay evidencia suficiente para considerar que la proporción de diabéticos en la cohorte es diferente a la teórica? Realiza el contraste y razona la respuesta.**
+
+```{r}
+# Nos piden contrastar: Hipótesis nula == 0.3 ; Hipótesis alternativa != 0.3
+
+# Creamos variable dat_diabetes con todos los valores de la variable de 
+# interés 'DIABETES' == 'Yes' que coinciden con personas hospitalizadas.
+
+dat_diabetes <- dat$DIABETES[dat$DIABETES== 'Yes' & dat$PATIENT_TYPE=='Yes']
+
+# Vamos a realizar la prueba de Pearson # x^2 usando la función prop.test(),
+# sin aplicarle la corrección de Yates, # con un nivel de confianza del 95%
+
+prop.test(length(dat_diabetes), length(dat$PATIENT_TYPE), p = 0.30, 
+          alternative = 'two.sided', correct = FALSE)
+
+# Ahora realizamos el mismo test con un nivel de confianza del 99%
+
+prop.test(length(dat_diabetes), length(dat$PATIENT_TYPE), p = 0.30, 
+          alternative = 'two.sided', conf.level=0.99, correct = FALSE)
+
+
+```
+
+Teniendo en cuenta los resultados, no tenemos evidencia de que la proporción de diabéticos en la cohorte sea distinta a la teórica. Podemos aceptar la hipótesis nula ya que nos seguimos manteniendo dentro del área de confianza.
+
+**c) Existe evidencia de que los pacientes diabéticos tienen un mayor riesgo de requirimiento de soporte ventilatorio invasivo (INTUBED). ¿Qué contraste de hipótesis plantearías para comparar el riesgo entre grupos?**
+
+```{r}
+# Escribimos respuesta fuera del chunk
+```
+Llevaría a cabo una prueba de hipótesis para la diferencia de proporciones. El contraste entre hipótesis sería bidireccional.  
+
+La hipótesis nula sería: La proporción de pacientes con diabetes que necesitan 'INTUBED' es igual a la proporción de pacientes sin diabetes que también necesitan 'INTUBED'.  
+
+La hipótesis alternativa sería: La proporción de pacientes con diabetes que necesitan 'INTUBED' no es igual a la proporción de pacientes sin diabetes que también necesitan 'INTUBED'.  
+
+$$H_0: \rho_0 = \rho_1$$
+$$H_1: \rho_0 \neq \rho_1$$
+Dónde:  
+$\rho_0 \Rightarrow$ proporción de pacientes con diabetes que necesitan 'INTUBED'.  
+$\rho_1 \Rightarrow$ proporción de pacientes sin diabetes que necesitan 'INTUBED'  
+$H_0 \Rightarrow$ Hipótesis nula. Nos indicaría que la proporcion de pacientes diabéticos y no diabéticos es la misma.  
+$H_1 \Rightarrow$ Hipótesis alternativa. Nos indicaría que la proporcion de pacientes diabéticos y no diabéticos no es la misma.  
+
+
+**d) Presenta la tabla de contigencia entre las variables diabetes y soporte ventilatorio invasivo. Además realiza el contraste de hipótesis planteado en el apartado anterior con un nivel de signifiación del 0.05. (Nota: usa el parámetro correct = FALSE)**
+
+```{r}
+
+# Creamos la variable dat_diabetes_all con todos los valores de la variable de interés 'DIABETES'. 
+dat_diabetes_all <- dat$DIABETES
+
+# Creamos la variable dat_intubed con todos los valores de la variable de interés 'INTUBED'. 
+dat_intubed <- dat$INTUBED
+
+# Creamos la tabla de contingencias que nos solicitan y la imprimimos
+tab_cont <- table(dat_diabetes_all, dat_intubed)
+print(tab_cont)
+
+# Llevamos a cabo el contraste de hipótesis
+
+resu_tab_cont <- prop.test(tab_cont, alternative = 'two.sided', conf.level = 0.95, correct = FALSE)
+
+print(resu_tab_cont)
+```
+
+**e) De acuerdo con el valor p, ¿Podemos decir que existe aumento estadísticamente significativo en la proporción de pacientes con requerimiento de soporte ventilatorio invasivo en el grupo de pacientes con diabetes? Razona la respuesta. Nota: fijamos el nivel de significación al 0.05. **
+
+```{r}
+# Escribimos respuesta fuera del chunk
+```
+Teniendo en cuenta que p-valor `r resu_tab_cont$p.value  ` < 0.05 podemos afirmar que la hipótesis nula será rechazada, es decir: no hay igualdad de proporciones entre pacientes que necesitan ser entubados que sean diabéticos, con aquellos que necesitan ser entubados y que no son diabéticos.  
+
+A su vez, podemos observar que prop 1 es mayor que prop 2, es decir, la proporción de pacientes que necesitan ser entubados es mayor para aquellos que sufren diabetes que para los que no.
+
+**f) Es conocido que la edad es un factor determinante en el riesgo de intubación. Realiza una comparativa gráfica de la distribución de la edad de los pacientes en función de si requirieron intubación o no. Discute los resultados. (Nota: puedes realizar la comparativa gráfica mediante diagramas de cajas o histogramas). **
+
+```{r, fig.width=10}
+# Creamos variables con los datos de personas intubadas y personas que no
+# en relación con la edad
+
+dat_intubed_yes <- dat$AGE[dat$INTUBED== 'Yes']
+dat_intubed_no <- dat$AGE[dat$INTUBED== 'No']
+
+
+# Creamos nuestro histograma de densidad para comparar los datos.
+
+
+hist(dat_intubed_yes, prob = TRUE, breaks = 50, xlim = c(0,115), 
+     main = 'Densidad de Intubación por edad', xlab = 'Edad', 
+     ylab = 'Densidad', col = rgb(0.8, 0.1, 1, alpha = 0.7), 
+     xaxp = c(0,110,11))
+
+grid(nx = NA, ny = NULL, lty = 2, col = "gray", lwd = 1)
+
+
+# Codificamos linea de distriución normal para hacer pruebas durante desarrollo 
+# de nuestro código. (La mantenemos desactivada)
+#x <- seq(min(dat_intubed_yes), max(dat_intubed_yes), length = 40)
+#f <- dnorm(x, mean = mean(dat_intubed_yes), sd = sd(dat_intubed_yes))
+#lines(x, f, col = "red", lwd = 2)
+
+
+# Imprimimos linea de densidad de pacientes intubados.
+
+lines(density(dat_intubed_yes), col = "blue", lwd = 1)
+
+hist(dat_intubed_no, prob= TRUE, breaks = 50, xlim = c(0,115), 
+     add = TRUE, col = rgb(1, 0, 0, alpha = 0.3), xaxp = c(0,110,11))
+
+
+# Codificamos linea de distriución normal para hacer pruebas durante desarrollo 
+# de nuestro código. (La mantenemos desactivada)
+#x_2 <- seq(min(dat_intubed_no), max(dat_intubed_no), length = 40)
+#f_2 <- dnorm(x, mean = mean(dat_intubed_no), sd = sd(dat_intubed_no))
+#lines(x_2, f_2, col = "blue", lwd = 2)
+
+
+# Imprimimos linea de densidad de pacientes no intubados.
+
+lines(density(dat_intubed_no), col = "black", lwd = 2)
+
+
+
+legend('topright', legend = c('Intubado', 'Densidad Intubado', 
+                              'No Intubado', 'Densidad NO Intubado'), 
+       fill = c(rgb(0.8, 0.1, 1, alpha = 0.7), 'blue', rgb(1, 0, 0, alpha = 0.3),
+                'black'), bg = rgb(0.2, 0.3, 0.5, alpha= 0.3), 
+       inset = c(0.01, 0.01), cex = 0.7)
+
+
+# Creamos nuestro histograma de frecuencias para comparar los datos.
+
+
+hist(dat_intubed_yes, breaks = 50, xlim = c(0,115), ylim = c(0,150), 
+     main = 'Freq Intubación por edad', xlab = 'Edad', 
+     ylab = 'Frecuencia', col = rgb(0.8, 0.1, 1, alpha = 0.7), 
+     xaxp = c(0,110,11))
+
+
+hist(dat_intubed_no, breaks = 50, xlim = c(0,115), ylim = c(0,150),
+     add = TRUE, col = rgb(1, 0, 0, alpha = 0.3), xaxp = c(0,110,11))
+
+
+grid(nx = NA, ny = NULL, lty = 2, col = "gray", lwd = 1)
+
+legend("topright", legend = c("Intubado", "No Intubado"), 
+       fill = c(rgb(0.8, 0.1, 1, alpha = 0.7), 
+                rgb(1, 0, 0, alpha = 0.3)), 
+       bg = rgb(0.2, 0.3, 0.5, alpha= 0.3), inset = c(0.01, 0.01), cex = 0.7)
+
+```
+Cómo podemos observar en ambos histogramas, el número de pacientes que no 
+requirieron intubación es más elevado que los que si. Analizando los 
+pacientes que si requirieron intubación, podemos observar como los pacientes
+con edades comprendidas entre 50 y 80 años son aquellos que más requirieron
+ser intubados. Por lo que podemos afirmar que efectivamente, la edad es un
+factor determinante en el riesgo de intubación.
+
+**g) Estima mediante un intervalo de confianza al 95% la diferencia de media de edad entre los pacientes que fueron intubados respecto aquellos que no. Comenta el resultado. Nota: asume varianzas iguales.**
+
+```{r}
+# Lanzamos función t.test()  asumiendo varianzas iguales.
+resu_ageintu <- t.test(dat_intubed_yes, dat_intubed_no, var.equal = TRUE, 
+                       conf.level = 0.95)
+
+# Imprimimos resultados
+print(resu_ageintu)
+
+```
+Observamos que el valor crítico de t es: `r resu_ageintu$statistic `, el p-valor es: `r resu_ageintu$p.value `, y el intervalo de confianza es [`r resu_ageintu$conf.int`].  
+
+Vemos que, bajo un nivel de confianza del 95 %, la diferencia de media de edad entre los pacientes que fueron intubados respecto a los que no es bastante signifcativa.  
+
+El valor de t nos indica que la diferencia entre las medias es grande en comparación con la variabilidad dentro de las muestras, y a su vez, el p-valor se haya fuera de nuestro intervalo de confianza, por lo que rechazaríamos la hipótesis nula de que la diferencia en las medias fuese igual a 0.
+
+
+
+**h) En clave contraste de hipótesis, ¿podemos rechazar la hipótesis nula de igualdad de medias entre grupos? razona la respuesta.**
+
+```{r}
+# Escribimos respuesta fuera del chunk
+```
+Observamos que el valor crítico de t es: `r resu_ageintu$statistic `, el p-valor es: `r resu_ageintu$p.value `, y el intervalo de confianza es [`r resu_ageintu$conf.int`].  
+
+El valor de t nos indica que la diferencia entre las medias es grande en comparación con la variabilidad dentro de las muestras.   
+
+A su vez, el p-valor se haya fuera de nuestro intervalo de confianza, por lo que rechazaríamos la hipótesis nula de que la diferencia en las medias fuese igual a 0.
+
+
+A partir de este momento se decide estudiar en profundidad a los pacientes que requirieron soporte ventilatorio invasivo (INTUBED). Para ello, nos centraremos únicamente en esta subploblación.
+
+**i) Entre los pacientes que requirieron soporte ventilatorio invasivo, contrasta si la proporción de mortalidad fue diferente entre los pacientes con diabetes y los que no. Comenta los resultados.**
+
+```{r}
+# Definimos las dos proporciones que queremos estudiar y creamos tabla de contingencias.
+
+prop_died <- dat$DIED[dat$INTUBED == 'Yes']
+prop_diabetes <- dat$DIABETES[dat$INTUBED == 'Yes']
+
+tab_cont_prop <- table(prop_died, prop_diabetes)
+print(tab_cont_prop)
+
+# Realizamos el contraste en cada proporcion de aquellos pacientes que si fallecieron
+resu_prop <- prop.test(tab_cont_prop, alternative = 'two.sided', conf.level = 0.95, correct = FALSE)
+
+print(resu_prop)
+
+```
+Observamos que el valor estadístico de $X^2$ es: `r resu_prop$statistic `, el p-valor es: `r resu_prop$p.value `, y el intervalo de confianza es [`r resu_prop$conf.int`].  
+
+El estadístico nos indica el valor que difieren las proporciones que hemos analizado de las proporciones esperadas bajo la hipótesis nula de igualdad de proporciones.  
+
+El p-valor vemos que al ser menor que 0.05 (95 % de confianza) se encuentra en nuestra área de rechazo, por lo que es una evidencia en contra de la hipótesis nula de igualdad de proporciones.  
+
+Respecto al intervalo de confianza, podemos observar que no incluye el 0, por lo que es otro dato más en contra de la hipótesis nula de igualdad de proporciones.  
+
+Por último, podemos observar que prop 1 y prop 2 difieren entre ellas, confirmándonos que las proporciones de pacientes que fallecieron con diabetes de los que fallecieron sin tener diabetes son diferentes.
+
+**j) Tras el alta hopitalaria los pacientes supervivientes sufren secuelas pulmonares graves. Está demostrado que la capacidad de difusión del monóxido de carbono (DLCO) es una medida sensible al daño pulmonar y su funcionalidad. Interesa saber si seis meses después del alta hospitalaria los pacientes han mejorado este parámetro. Para ello, se les hace una medición el día del alta hopitalaria y seis meses después. Plantea el contraste de hipótesis que realizarías para contrastar si los pacientes mejoraron significativamente. (nota: Mayor valor de DLCO mejor estado pulmonar).    **
+
+```{r}
+# Escribimos respuesta fuera del chunk
+```
+
+Para contrastar si los pacientes mejoraron a los seis meses de darles el alta médica realizaríamos el siguiente contraste de hipótesis unilateral:
+
+$$H_0: \mu_0 - \mu_1 \leq 0$$
+$$H_1: \mu_0 - \mu_1 > 0$$
+Dónde:  
+$\mu_0 \Rightarrow$ medida de DLCO el día del alta médica del paciente.  
+$\mu_1 \Rightarrow$ medida de DLCO del paciente seis meses después del alta médica.  
+$H_0 \Rightarrow$ Hipótesis nula. Nos indicaría que no ha habido mejora, ya que los valores de DLCO se mantendrían igual o disminuirian.  
+$H_1 \Rightarrow$ Hipótesis alternativa. Nos indicaría que ha habido mejoría ya que los valores de DLCO habrían aumentado.  
+
+
+
+
+
+
